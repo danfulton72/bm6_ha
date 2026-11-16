@@ -1,0 +1,126 @@
+{
+  "config": {
+    "flow_title": "{name}",
+    "step": {
+      "user": {
+        "description": "Choose the BM6 battery monitor to add.",
+        "data": { "address": "Device" }
+      },
+      "bluetooth_confirm": {
+        "description": "Do you want to set up {name}?"
+      }
+    },
+    "abort": {
+      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]",
+      "no_devices_found": "[%key:common::config_flow::abort::no_devices_found%]",
+      "not_supported": "This device is not a BM6 battery monitor."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "BM6 options",
+        "data": {
+          "poll_interval": "Polling interval",
+          "keep_connected": "Stay connected (live data)",
+          "auto_history": "Download stored history automatically",
+          "history_interval": "History download interval",
+          "soc_curve": "Custom SoC curve"
+        },
+        "data_description": {
+          "poll_interval": "How often to connect and read the battery.",
+          "keep_connected": "Keep the Bluetooth connection open so the monitor streams live readings, like the app's main screen. Uses a Bluetooth connection slot permanently.",
+          "auto_history": "Fetch the voltage log the BM6 records every 2 minutes and import it into long-term statistics, filling gaps when the car was away.",
+          "history_interval": "Minimum time between history downloads.",
+          "soc_curve": "Only for the custom battery types: 11 comma-separated voltages for 100%, 90%, … 0% state of charge, e.g. 12.9, 12.8, 12.7, 12.6, 12.5, 12.4, 12.3, 12.2, 12.1, 12.0, 11.9"
+        }
+      }
+    },
+    "error": {
+      "invalid_curve": "Enter exactly 11 voltages between 2.6 and 40.9, separated by commas."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "status": {
+        "name": "Status",
+        "state": { "normal": "Battery OK", "low": "Low charge", "charging": "Charging" },
+        "state_attributes": { "engine_running": { "name": "Engine running" } }
+      },
+      "rapid_acceleration": { "name": "Rapid accelerations" },
+      "rapid_deceleration": { "name": "Rapid decelerations" },
+      "crank_voltage": { "name": "Cranking voltage" },
+      "crank_duration": { "name": "Cranking duration" },
+      "crank_result": {
+        "name": "Cranking test",
+        "state": { "ok": "Cranking voltage OK", "low": "Cranking voltage low" }
+      },
+      "crank_time": { "name": "Last engine start" },
+      "charge_result": {
+        "name": "Charging test",
+        "state": { "ok": "Charging voltage OK", "high": "Charging voltage high", "low": "Charging voltage low" }
+      },
+      "charge_high_rpm_voltage": { "name": "High-speed charging voltage" },
+      "charge_idle_voltage": { "name": "Idle charging voltage" },
+      "charge_ripple": { "name": "Diode ripple voltage" },
+      "charge_time": { "name": "Last charging test" },
+      "firmware": { "name": "Firmware" },
+      "last_update": { "name": "Last reading" },
+      "history_synced_until": { "name": "History imported until" }
+    },
+    "binary_sensor": {
+      "charging": { "name": "Charging" },
+      "low_battery": { "name": "Low charge" },
+      "voltage_problem": { "name": "Voltage warning" },
+      "temperature_problem": { "name": "Temperature warning" },
+      "crank_problem": { "name": "Cranking warning" },
+      "charging_system_problem": { "name": "Charging system warning" }
+    },
+    "button": {
+      "charge_test_step_1": { "name": "Charging test step 1 (idle, loads on)" },
+      "charge_test_step_2": { "name": "Charging test step 2 (2500-3000 RPM)" },
+      "charge_test_step_3": { "name": "Charging test step 3 (idle, ripple)" },
+      "sync_history": { "name": "Download history" },
+      "refresh": { "name": "Refresh" }
+    },
+    "select": {
+      "battery_type": {
+        "name": "Battery type",
+        "state": {
+          "lead_acid": "Regular 12V lead-acid",
+          "agm": "AGM",
+          "efb": "EFB",
+          "gel": "GEL",
+          "lead_acid_custom_smart": "Custom lead-acid (smart algorithm)",
+          "lead_acid_custom_voltage": "Custom lead-acid (voltage table)",
+          "lithium": "Lithium",
+          "lithium_custom_smart": "Custom lithium (smart algorithm)",
+          "lithium_custom_voltage": "Custom lithium (voltage table)"
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "not_found": { "message": "BM6 {address} is not in range of a connectable Bluetooth adapter." },
+    "unknown_device": { "message": "That device is not a BM6 battery monitor." },
+    "curve_required": { "message": "Set a custom SoC curve in the integration options before choosing a custom battery type." }
+  },
+  "services": {
+    "sync_history": {
+      "name": "Download history",
+      "description": "Downloads the 2-minute log stored on the BM6 and imports it into long-term statistics. Returns the engine trips found.",
+      "fields": {
+        "device_id": { "name": "Device", "description": "The BM6 to read." },
+        "full": { "name": "Full download", "description": "Download everything stored (31 or 72 days) instead of only what is new." }
+      }
+    },
+    "charging_test_step": {
+      "name": "Charging system test step",
+      "description": "Runs one step of the app's 3-step charging system test. Step 1: engine idling with all loads on. Step 2: loads off, engine held at 2500-3000 RPM. Step 3: idling with loads off. The result is returned after step 3.",
+      "fields": {
+        "device_id": { "name": "Device", "description": "The BM6 to test." },
+        "step": { "name": "Step", "description": "Step number (1, 2 or 3)." }
+      }
+    }
+  }
+}

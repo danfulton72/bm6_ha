@@ -1,0 +1,30 @@
+{
+  "domain": "bm6_ha",
+  "name": "BM6 Battery Monitor",
+  "after_dependencies": [
+    "recorder"
+  ],
+  "bluetooth": [
+    {
+      "local_name": "BM6",
+      "connectable": true
+    },
+    {
+      "local_name": "Battery Guard",
+      "connectable": true
+    }
+  ],
+  "codeowners": [
+    "@danfulton72"
+  ],
+  "config_flow": true,
+  "dependencies": [
+    "bluetooth"
+  ],
+  "documentation": "https://github.com/danfulton72/bm6_ha",
+  "integration_type": "device",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/danfulton72/bm6_ha/issues",
+  "requirements": [],
+  "version": "1.0.0"
+}

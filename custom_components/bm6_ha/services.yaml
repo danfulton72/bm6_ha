@@ -1,0 +1,27 @@
+sync_history:
+  fields:
+    device_id:
+      required: true
+      selector:
+        device:
+          integration: bm6_ha
+    full:
+      default: false
+      selector:
+        boolean:
+
+charging_test_step:
+  fields:
+    device_id:
+      required: true
+      selector:
+        device:
+          integration: bm6_ha
+    step:
+      required: true
+      selector:
+        select:
+          options:
+            - "1"
+            - "2"
+            - "3"

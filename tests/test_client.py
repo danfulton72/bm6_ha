@@ -8,7 +8,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from bleak.backends.device import BLEDevice
 import pytest
 
-from custom_components.bm6_ha import protocol as p
 from custom_components.bm6_ha.client import BM6Client, BM6Error
 
 

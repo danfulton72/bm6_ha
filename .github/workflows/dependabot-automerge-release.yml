@@ -8,6 +8,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  actions: write
   checks: read
   statuses: read
 
@@ -36,6 +37,16 @@ jobs:
               const { data: statuses } = await github.rest.repos.getCombinedStatusForRef({ owner, repo, ref: pr.head.sha });
               if (statuses.total_count > 0 && statuses.state !== 'success') continue;
               const { data: merged } = await github.rest.pulls.merge({ owner, repo, pull_number: pr.number, merge_method: 'squash', sha: pr.head.sha, commit_title: `chore(deps): merge Dependabot #${pr.number}` });
-              if (merged.merged) { core.notice(`Merged Dependabot #${pr.number}. Release workflow will publish patch release.`); return; }
+              if (merged.merged) {
+                // A squash merge made with GITHUB_TOKEN does not fire push
+                // workflows. Explicitly dispatch both CI workflows on main;
+                // the gated Release workflow will wait for BOTH to pass.
+                const ref = context.payload.repository.default_branch;
+                for (const workflow_id of ['test.yml', 'validate.yml']) {
+                  await github.rest.actions.createWorkflowDispatch({ owner, repo, workflow_id, ref });
+                }
+                core.notice(`Merged Dependabot #${pr.number}; dispatched tests and validation before release.`);
+                return;
+              }
             }
             core.notice('No green patch/minor Dependabot PR is ready.');

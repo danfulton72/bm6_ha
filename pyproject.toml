@@ -6,13 +6,13 @@ build-backend = "setuptools.build_meta"
 name = "bm6-ha"
 version = "1.0.0"
 description = "Home Assistant Bluetooth integration for the BM6 Battery Monitor"
-requires-python = ">=3.14"
-dependencies = ["homeassistant>=2026.11.0"]
+requires-python = ">=3.14.2"
+dependencies = ["homeassistant>=2026.11.1,<2026.12"]
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=8",
-    "pytest-homeassistant-custom-component>=0.13",
+    "pytest>=9",
+    "pytest-homeassistant[bluetooth]==2026.11.1",
     "ruff>=0.8",
 ]
 

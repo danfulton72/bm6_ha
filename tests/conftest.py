@@ -13,11 +13,6 @@ from custom_components.bm6_ha import protocol as p
 ADDRESS = "A4:C1:38:01:02:03"
 
 
-@pytest.fixture(autouse=True)
-def auto_enable_custom_integrations(enable_custom_integrations):
-    yield
-
-
 def _blocks(hexstr: str) -> bytes:
     raw = bytes.fromhex(hexstr)
     if len(raw) % 16:

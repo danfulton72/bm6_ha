@@ -66,6 +66,15 @@ def test_latest_failed_attempt_overrides_earlier_success() -> None:
     assert not release_is_ready({"total_count": len(runs), "workflow_runs": runs}, SHA)[0]
 
 
+def test_failed_rerun_overrides_more_recent_successful_workflow() -> None:
+    runs = _green_runs()
+    retried = _run(REQUIRED_WORKFLOWS[0], run_id=0, conclusion="failure")
+    # The older workflow started first but was re-run after later workflows.
+    retried["updated_at"] = "2026-11-16T23:59:00Z"
+    runs.append(retried)
+    assert not release_is_ready({"total_count": len(runs), "workflow_runs": runs}, SHA)[0]
+
+
 def test_truncated_api_results_never_release() -> None:
     assert not release_is_ready({"total_count": 101, "workflow_runs": _green_runs()}, SHA)[0]
 

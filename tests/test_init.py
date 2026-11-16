@@ -82,7 +82,9 @@ async def test_setup_reads_realtime_and_crank(hass: HomeAssistant, fake_bm6: Fak
     assert hass.states.get("binary_sensor.bm6_0203_cranking_warning").state == "off"
     assert len(events) == 1
 
-    device = dr.async_get(hass).async_get_device(identifiers={(DOMAIN, ADDRESS)})
+    device = dr.async_get(hass).async_get_device_by_identifier(
+        (DOMAIN, ADDRESS), entry.entry_id
+    )
     assert device.sw_version == "1.8"
 
     # Battery type is never written unless chosen.
@@ -140,7 +142,7 @@ async def test_history_import(hass: HomeAssistant, fake_bm6: FakeBM6) -> None:
         "sync_history",
         {
             "device_id": dr.async_get(hass)
-            .async_get_device(identifiers={(DOMAIN, ADDRESS)})
+            .async_get_device_by_identifier((DOMAIN, ADDRESS), entry.entry_id)
             .id,
             "full": True,
         },

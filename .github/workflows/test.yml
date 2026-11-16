@@ -17,9 +17,12 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.14"
+      # Home Assistant's pytest fixture treats sys.path entries as filesystem paths.
+      # PEP 660 editable installs add a synthetic __editable__.*.__path_hook__
+      # entry which fails that assumption during fixture setup.
       - name: Install test dependencies
-        run: python -m pip install -e '.[dev]'
+        run: python -m pip install '.[dev]'
       - name: Test integration
-        run: pytest -q
+        run: python -m pytest -q
       - name: Ruff critical lint
-        run: ruff check . --select E4,E7,E9,F
+        run: python -m ruff check . --select E4,E7,E9,F

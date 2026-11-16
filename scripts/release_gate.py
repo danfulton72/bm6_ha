@@ -38,7 +38,7 @@ def release_is_ready(payload: dict[str, Any], sha: str) -> tuple[bool, str]:
         latest = max(
             candidates,
             key=lambda run: (
-                run.get("created_at") or "",
+                run.get("updated_at") or run.get("created_at") or "",
                 int(run.get("run_attempt") or 0),
                 int(run.get("id") or 0),
             ),

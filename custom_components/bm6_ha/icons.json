@@ -1,0 +1,39 @@
+{
+  "entity": {
+    "sensor": {
+      "status": { "default": "mdi:car-battery" },
+      "rapid_acceleration": { "default": "mdi:speedometer" },
+      "rapid_deceleration": { "default": "mdi:speedometer-slow" },
+      "crank_voltage": { "default": "mdi:engine" },
+      "crank_duration": { "default": "mdi:timer-outline" },
+      "crank_result": { "default": "mdi:engine" },
+      "crank_time": { "default": "mdi:engine" },
+      "charge_result": { "default": "mdi:car-cruise-control" },
+      "charge_high_rpm_voltage": { "default": "mdi:flash" },
+      "charge_idle_voltage": { "default": "mdi:flash-outline" },
+      "charge_ripple": { "default": "mdi:sine-wave" },
+      "charge_time": { "default": "mdi:car-cruise-control" },
+      "firmware": { "default": "mdi:chip" },
+      "history_synced_until": { "default": "mdi:history" }
+    },
+    "binary_sensor": {
+      "crank_problem": { "default": "mdi:engine-off" },
+      "charging_system_problem": { "default": "mdi:car-battery" },
+      "voltage_problem": { "default": "mdi:flash-alert" },
+      "temperature_problem": { "default": "mdi:thermometer-alert" }
+    },
+    "button": {
+      "charge_test_step_1": { "default": "mdi:numeric-1-circle" },
+      "charge_test_step_2": { "default": "mdi:numeric-2-circle" },
+      "charge_test_step_3": { "default": "mdi:numeric-3-circle" },
+      "sync_history": { "default": "mdi:history" }
+    },
+    "select": {
+      "battery_type": { "default": "mdi:car-battery" }
+    }
+  },
+  "services": {
+    "sync_history": { "service": "mdi:history" },
+    "charging_test_step": { "service": "mdi:car-cruise-control" }
+  }
+}

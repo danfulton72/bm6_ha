@@ -1,0 +1,74 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-main
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout including tags
+        uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Determine next version
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --tags --force
+          LATEST="$(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname | head -n 1)"
+          if [ -n "$LATEST" ] && git merge-base --is-ancestor HEAD "$LATEST"; then
+            echo "already_released=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ -z "$LATEST" ]; then
+            VERSION="$(python -c 'import json;print(json.load(open("custom_components/bm6_ha/manifest.json"))["version"])')"
+          else
+            IFS=. read -r MAJOR MINOR PATCH <<< "${LATEST#v}"
+            VERSION="$MAJOR.$MINOR.$((PATCH + 1))"
+          fi
+          echo "already_released=false" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+      - name: Update manifest version
+        if: steps.version.outputs.already_released != 'true'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          python - <<'PYCODE'
+          import json, os
+          from pathlib import Path
+          path=Path('custom_components/bm6_ha/manifest.json')
+          manifest=json.loads(path.read_text())
+          manifest['version']=os.environ['VERSION']
+          path.write_text(json.dumps(manifest, indent=2) + '\n')
+          PYCODE
+      - name: Commit version update, tag and release
+        if: steps.version.outputs.already_released != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          if ! git diff --quiet -- custom_components/bm6_ha/manifest.json; then
+            git add custom_components/bm6_ha/manifest.json
+            git commit -m "chore(release): $TAG [skip ci]"
+            git push origin HEAD:main
+          fi
+          git tag -a "$TAG" -m "$TAG"
+          git push origin "$TAG"
+          gh release create "$TAG" --verify-tag --generate-notes --title "$TAG"

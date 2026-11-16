@@ -1,0 +1,41 @@
+name: Dependabot minor/patch auto-merge
+
+on:
+  schedule:
+    - cron: "23 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  checks: read
+  statuses: read
+
+concurrency:
+  group: dependabot-automerge
+  cancel-in-progress: false
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Merge a green patch or minor Dependabot PR
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const approved = new Set(['success', 'neutral', 'skipped']);
+            const prs = await github.paginate(github.rest.pulls.list, { owner, repo, state: 'open', per_page: 100 });
+            for (const item of prs) {
+              if (item.user?.login !== 'dependabot[bot]' || item.draft) continue;
+              const { data: pr } = await github.rest.pulls.get({ owner, repo, pull_number: item.number });
+              if (!/update-type:\s+version-update:semver-(minor|patch)/i.test(pr.body || '')) continue;
+              if (pr.mergeable !== true || ['dirty','blocked','behind','draft'].includes(pr.mergeable_state)) continue;
+              const { data: checks } = await github.rest.checks.listForRef({ owner, repo, ref: pr.head.sha, per_page: 100 });
+              if (!checks.check_runs.length || checks.check_runs.some(c => c.status !== 'completed' || !approved.has(c.conclusion))) continue;
+              const { data: statuses } = await github.rest.repos.getCombinedStatusForRef({ owner, repo, ref: pr.head.sha });
+              if (statuses.total_count > 0 && statuses.state !== 'success') continue;
+              const { data: merged } = await github.rest.pulls.merge({ owner, repo, pull_number: pr.number, merge_method: 'squash', sha: pr.head.sha, commit_title: `chore(deps): merge Dependabot #${pr.number}` });
+              if (merged.merged) { core.notice(`Merged Dependabot #${pr.number}. Release workflow will publish patch release.`); return; }
+            }
+            core.notice('No green patch/minor Dependabot PR is ready.');

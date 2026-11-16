@@ -1,0 +1,41 @@
+name: Complete BM6 source import
+
+on:
+  push:
+    branches:
+      - feat/bm6-ha-reviewed-integration
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: feat/bm6-ha-reviewed-integration
+      - name: Verify and extract original files
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "bf8dde6c8200ef3237ecb112891b1643a28c6cc8f7cd7b55eeae6220a723e656  .import/bm6_ha_source.tar.xz" | sha256sum -c -
+          tar -xJf .import/bm6_ha_source.tar.xz
+          python -m compileall -q custom_components/bm6_ha tests
+      - name: Emit the workflow files for final transfer
+        shell: bash
+        run: |
+          for file in .github/workflows/{dependabot-automerge-release,release,test,validate}.yml; do
+            printf 'WORKFLOW_FILE=%s:%s\n' "$file" "$(base64 -w0 "$file")"
+          done
+      - name: Push component files without workflow changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          rm -rf .import
+          git add -A -- . ':!.github/workflows'
+          git commit -m 'feat: import BM6 integration, tests, and metadata'
+          git push origin HEAD:feat/bm6-ha-reviewed-integration

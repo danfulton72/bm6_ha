@@ -12,7 +12,7 @@ dependencies = ["homeassistant>=2026.11.1,<2026.12"]
 [project.optional-dependencies]
 dev = [
     "pytest>=9",
-    "pytest-homeassistant[bluetooth]==2026.11.1",
+    "pytest-homeassistant[bluetooth]==2026.11.2",
     "ruff>=0.8",
 ]
 
